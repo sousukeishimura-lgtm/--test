@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ガチ時間割アプリ</title>
+  <link rel="stylesheet" href="zikanwari-style.css" />
+  <script defer src="zikanwari-main.js"></script>
+</head>
+<body>
+  <header>
+    <h1 id="header-title">今日の時間割</h1>
+  </header>
+
+  <main>
+    <div id="view-home" class="view active">
+      <div id="today-list" class="list-container"></div>
+    </div>
+
+    <div id="view-week" class="view">
+      <div class="grid-container">
+        <div class="grid-header"></div>
+        <div class="grid-header" data-day-header="月">月</div>
+        <div class="grid-header" data-day-header="火">火</div>
+        <div class="grid-header" data-day-header="水">水</div>
+        <div class="grid-header" data-day-header="木">木</div>
+        <div class="grid-header" data-day-header="金">金</div>
+        <div id="grid-body" class="grid-body-contents"></div>
+      </div>
+    </div>
+
+    <div id="view-settings" class="view">
+      <div class="list-container">
+        <div class="card">
+          <div class="card-subject">PDF自動インポート</div>
+          <p class="pdf-note">PDFを選んで解析を押してください。時刻や区切り行は自動で除外します。</p>
+          <div class="settings-list">
+            <input type="file" id="pdf-upload" accept="application/pdf" class="pdf-input" />
+            <button id="btn-parse-pdf" class="btn-save" style="background:#2196f3;">解析スタート</button>
+            <p id="pdf-status" class="pdf-status"></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-subject">表示設定</div>
+          <div class="settings-list">
+            <label><input type="checkbox" id="setting-show-empty"> 空きコマも表示</label>
+            <label><input type="checkbox" id="setting-show-teacher" checked> 先生名を表示</label>
+            <label><input type="checkbox" id="setting-show-room" checked> 教室を表示</label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-subject">時間割設定</div>
+          <div class="settings-list">
+            <label>1日の時限数:
+              <select id="setting-periods">
+                <option value="4">4限</option>
+                <option value="5">5限</option>
+                <option value="6">6限</option>
+                <option value="7">7限</option>
+                <option value="8" selected>8限</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-subject">詳細設定</div>
+          <div class="settings-list" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="setting-item">
+              <label for="setting-api-key" style="display: block; margin-bottom: 5px; font-weight: bold;">Gemini APIキー</label>
+              <div style="display: flex; gap: 5px;">
+                <input type="text" id="setting-api-key" placeholder="AIzaSy..." style="flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 4px;" />
+                <button id="btn-clear-api-key" class="btn-delete" style="padding: 5px 10px;">削除</button>
+              </div>
+            </div>
+            <div class="setting-item">
+              <label for="setting-custom-holidays" style="display: block; margin-bottom: 5px; font-weight: bold;">特別な休日（手動追加）</label>
+              <p class="setting-hint" style="font-size:0.8em; color:#666; margin-bottom: 5px; margin-top: 0;">
+                「月-日 休日名」または「年-月-日 休日名」の形式で1行ずつ入力してください。<br>
+                例: 10-21 創立記念日
+              </p>
+              <textarea id="setting-custom-holidays" rows="3" placeholder="10-21 創立記念日&#10;2024-11-05 学園祭の振替" style="width: 100%; box-sizing: border-box; padding: 5px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-subject">データ設定</div>
+          <div class="modal-buttons">
+            <button id="btn-export" class="btn-save">書き出し</button>
+            <button id="btn-import" class="btn-cancel">読み込み</button>
+            <button id="btn-reset" class="btn-delete">初期化</button>
+          </div>
+          <input type="file" id="file-import" accept=".json" hidden />
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button id="tab-home" class="tab-btn active">🏠 今日</button>
+    <button id="tab-week" class="tab-btn">📅 1週間</button>
+    <button id="tab-settings" class="tab-btn">⚙️ 設定</button>
+  </nav>
+
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 id="modal-title">月曜 1限</h2>
+      <input type="text" id="input-subject" placeholder="科目名 (例: 現代文)">
+      <input type="text" id="input-teacher" placeholder="先生の名前">
+      <input type="text" id="input-room" placeholder="教室 (例: 3F 選択教室)">
+      <textarea id="input-memo" placeholder="メモ・宿題など"></textarea>
+
+      <div>
+        <label class="label-inline">色ラベル:</label>
+        <select id="input-color">
+          <option value="color-default">指定なし</option>
+          <option value="color-red">赤</option>
+          <option value="color-blue">青</option>
+          <option value="color-green">緑</option>
+          <option value="color-yellow">黄</option>
+        </select>
+      </div>
+
+      <div class="modal-buttons">
+        <button id="btn-cancel" class="btn-cancel">キャンセル</button>
+        <button id="btn-delete" class="btn-delete">削除</button>
+        <button id="btn-save" class="btn-save">保存</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

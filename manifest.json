@@ -1,0 +1,21 @@
+{
+  "name": "ガチ時間割",
+  "short_name": "時間割",
+  "description": "時間割管理アプリケーション",
+  "start_url": "./zikanwari.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "tensura.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "tensura.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
